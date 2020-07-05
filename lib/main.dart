@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:media_gallery/media_gallery.dart';
 
 void main() {
   runApp(MyApp());
@@ -50,16 +54,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  List<Media> _media = [];
+  final picker = ImagePicker();
+  final media = MediaGallery();
 
-  void _incrementCounter() {
+  Future listCollection() async {
+    List<MediaCollection> a =
+        await MediaGallery.listMediaCollections(mediaTypes: [MediaType.image]);
+    MediaCollection collection = a.first;
+    MediaPage media =
+        await collection.getMedias(mediaType: MediaType.image, take: 40);
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _media = media.items;
     });
   }
 
@@ -78,39 +85,32 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+          child: GridView.count(
+        primary: false,
+        //padding: const EdgeInsets.all(0),
+        padding: EdgeInsets.only(top: 4),
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+        crossAxisCount: 3,
+        children: _media
+            .map((f) => FutureBuilder(
+                  future: f.getFile(),
+                  builder:
+                      (BuildContext context, AsyncSnapshot<File> snapshot) {
+                    if (snapshot.hasData) {
+                      return Image.file(snapshot.data, scale: 2);
+                    }
+                    return Text("wait..");
+                  },
+                ))
+            .toList(),
+      )),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        onPressed: listCollection,
+        tooltip: 'Load',
+        child: Icon(Icons.add_a_photo),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

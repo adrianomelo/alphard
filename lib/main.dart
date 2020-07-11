@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:media_gallery/media_gallery.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(MyApp());
@@ -70,6 +71,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future init() async {
+    final storagesStatus = await Permission.storage.request().isGranted;
+    final photosStatus = await Permission.photos.request().isGranted;
+
+    return listCollection();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -108,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
             .toList(),
       )),
       floatingActionButton: FloatingActionButton(
-        onPressed: listCollection,
+        onPressed: init,
         tooltip: 'Load',
         child: Icon(Icons.add_a_photo),
       ), // This trailing comma makes auto-formatting nicer for build methods.

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:media_gallery/media_gallery.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
         await MediaGallery.listMediaCollections(mediaTypes: [MediaType.image]);
     MediaCollection collection = a.first;
     MediaPage media =
-        await collection.getMedias(mediaType: MediaType.image, take: 40);
+        await collection.getMedias(mediaType: MediaType.image, take: 200000);
 
     setState(() {
       _media = media.items;
@@ -101,18 +102,24 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: EdgeInsets.only(top: 4),
         crossAxisSpacing: 2,
         mainAxisSpacing: 2,
-        crossAxisCount: 3,
+        crossAxisCount: 4,
         children: _media
-            .map((f) => FutureBuilder(
-                  future: f.getFile(),
-                  builder:
-                      (BuildContext context, AsyncSnapshot<File> snapshot) {
-                    if (snapshot.hasData) {
-                      return Image.file(snapshot.data, scale: 2);
-                    }
-                    return Text("wait..");
-                  },
-                ))
+            .map((m) => FadeInImage(
+                fit: BoxFit.cover,
+                width: 50,
+                height: 50,
+                placeholder: MemoryImage(kTransparentImage),
+                image: MediaThumbnailProvider(media: m)))
+//            .map((f) => FutureBuilder(
+//                  future: f.getFile(),
+//                  builder:
+//                      (BuildContext context, AsyncSnapshot<File> snapshot) {
+//                    if (snapshot.hasData) {
+//                      return Image.file(snapshot.data, scale: 2);
+//                    }
+//                    return Text("wait..");
+//                  },
+//                ))
             .toList(),
       )),
       floatingActionButton: FloatingActionButton(
